@@ -1,5 +1,3 @@
-![PyRTSCWKeyer](https://user-images.githubusercontent.com/76819904/107884149-3b71f680-6ec1-11eb-8583-aaaf06b33308.png)
-
 
 NO WARRANTY
 NO WARRANTY
@@ -10,6 +8,10 @@ NO WARRANTY
 USE AT YOUR OWN RISK
 
         *******  NO SUPPORT OFFERED  *******
+
+![PyRTSCWKeyer](https://user-images.githubusercontent.com/76819904/107884149-3b71f680-6ec1-11eb-8583-aaaf06b33308.png)
+
+Python DTR/RTS CW keying program by N4LSJ
 
 For keying, a 5V reed relay with a cap across the contacts to
 the rig, and the relay's coil across a GPIO pin and ground,

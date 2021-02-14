@@ -1,0 +1,8 @@
+
+    Interfacing your serial port or USB to the rig can damage one or both 
+    if you do not know what you are doing.
+
+    Use of this program is at your own risk.
+
+        *******  NO SUPPORT OFFERED  *******
+

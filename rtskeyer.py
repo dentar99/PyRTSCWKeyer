@@ -35,7 +35,7 @@ DEBUGTS=datetime.datetime.utcnow()
 
 import time
 import serial
-import RPi.GPIO as GPIO
+import re
 
 from tkinter import *
 from tkinter.simpledialog import askstring
@@ -81,12 +81,8 @@ tuning_idt=''
 ################################# YOU SET THESE
 mycall='CHANGEME'                # EMPTY ON PURPOSE
 wpm="13"                        # WPM TO USE IF NO CONFIG FILE (FIX THIS)
-keyer = 11 # was 17                # GPIO PIN FOR KEYING TO TRANSISTOR
-serport="/dev/ttyUSB0"             # point this at your serial port
+serport="/dev/ttyS4"             # point this at your serial port
 ################################# END OF YOU SET THESE
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(keyer,GPIO.OUT)
 
 ser = serial.Serial()
 ser.port=serport
@@ -121,9 +117,9 @@ def updhotsbut(*args):
     print("should be fixing button...")
     print("hotsend is "+str(hotsend))
     if (hotsend == 1):
-        hots.config(text="Hot Send ON")
+        hots.config(text="Macro Immediate")
     else:
-        hots.config(text="Hot Send OFF")
+        hots.config(text="Macro Defer")
 
 def hotstog(*args):
     global hotsend
@@ -143,26 +139,20 @@ def pttaction(val):
         if (val == 0):
                 ptt_off()
 
-def starttuning(val):
+def starttuning(val,frombutton):
         global tuning
         global tuning_idt
         global keyer
 
-#        print ("val is "+str(val)+" and input is " +str(GPIO.input(keyer)))
-
-        if (GPIO.input(keyer) == 1 and val == 10):
-#                print ("should be canceling")
-                root.after_cancel(tuning_idt)
-                ptt_off()
-                return None
-
-        if (val > 1):
-                ptt_on()
-                val = val - 1
-                tuning_idt=root.after(1000,starttuning,val)
+        if (val > 1 and frombutton == 1 and tuning == 0):
+            ptt_on()
+            val = val - 1
+            tuning_idt=root.after(1000,starttuning,val,0)
+            tuning = 1
         else:
-                root.after_cancel(tuning_idt)
-                ptt_off()
+            root.after_cancel(tuning_idt)
+            ptt_off()
+            tuning = 0
 
 def startclock(*args):
         global clock_id
@@ -371,14 +361,11 @@ def ReadCfg():
 
 def Quitter(*args):
         global keyer
-        GPIO.cleanup(keyer)
         WriteCfg()
         root.destroy()
 
 def ptt_on():
         global ser
-        #global keyer
-        #GPIO.output(keyer,1)
         ser.setRTS(True)
 #        ser.setDTR(True)
         lcw.config(bg='#00ff00')
@@ -391,7 +378,6 @@ def ptt_off():
         ser.setRTS(False)
 #        ser.setDTR(False)
         root.update()
-        GPIO.output(keyer,0)
 
 def KEY(ch):
         global cw
@@ -511,7 +497,7 @@ scw = Button(cwframe,text="STOP", command=STOP, width=8, bg="red")
 
 ptt = Button(pttframe,text="PTT", width=4)
 tune = Button(pttframe,text="TUNE", width=5)
-hots = Button(pttframe,text="Hot Send", width=8)
+hots = Button(pttframe,text="Macro", width=15)
 
 datelab = Label (cwframe, font="Helvetica 12 bold", text="YYYY-MM-DDDD HH:MM", width=23)
 prosigns = Label(cwframe, font="Helvetica 10 bold", text="&=AS +=AR #=SK (=KN", width=23)
@@ -531,7 +517,7 @@ lnotes = Label(callsframe, text="<C> is replaced with your call.  <I> is replace
 ptt.bind('<Button-1>',lambda evt, val = 1: pttaction(val))
 ptt.bind('<ButtonRelease-1>',lambda evt, val=0: pttaction(val))
 
-tune.bind('<Button-1>',lambda evt, val = float(10): starttuning(val))
+tune.bind('<Button-1>',lambda evt, val = float(10): starttuning(val,1))
 hots.bind('<Button-1>',hotstog)
 
 
